@@ -11,44 +11,44 @@
 
 const double g = 9.81;
 
-void replace_path(std::vector <double> &coord, double coord_final) {
-	int size_of_x = coord.size();
-	for (int i = 0; i < size_of_x; i++) {
-		coord[i] -= coord_final;
+void replacePath(std::vector <double> &coord, double coordFinal) {
+	int size = coord.size();
+	for (int i = 0; i < size; i++) {
+		coord[i] -= coordFinal;
 	}
 	return;
 }
 
-std::vector <std::pair <double, double>> search_time_sector(std::map <double, double> W, std::vector <double> y, const double h) {
-	std::map <double, double> ::reverse_iterator itr_start = W.rbegin();
-	std::map <double, double> ::reverse_iterator itr_end = --W.rend();
-	std::map <double, double> ::iterator itr_y1, itr_y2;
+std::vector <std::pair <double, double>> searchTimeSector(std::map <double, double> W, std::vector <double> y, const double h) {
+	std::map <double, double> ::reverse_iterator itrStart = W.rbegin();
+	std::map <double, double> ::reverse_iterator itrEnd = --W.rend();
+	std::map <double, double> ::iterator itrY1, itrY2;
 	std::vector <std::pair <double, double>> time;
-	double stp_h, curr_h = h;
-	for (std::map <double, double> ::reverse_iterator it = itr_start; it != itr_end; ++it) {
-		stp_h = it->first - (++it)->first;
+	double stpH, currH = h;
+	for (std::map <double, double> ::reverse_iterator it = itrStart; it != itrEnd; ++it) {
+		stpH = it->first - (++it)->first;
 		--it;
 		int j1 = 0;
-		while (y[j1] > curr_h) {
+		while (y[j1] > currH) {
 			j1++;
 		}
 		int j2 = j1;
-		if (curr_h - stp_h > 0) {
-			while (y[j2] > (curr_h - stp_h)) {
+		if (currH - stpH > 0) {
+			while (y[j2] > (currH - stpH)) {
 				j2++;
 			}
 		}
 		else {
 			j2 = y.size();
 		}
-		time.push_back(std::pair <double, double>(curr_h - stp_h, j2 - j1));
-		curr_h -= stp_h;
+		time.push_back(std::pair <double, double>(currH - stpH, j2 - j1));
+		currH -= stpH;
 	}
 	return time;
 }
 
-std::pair <double, double> interpolate_force(std::map <double, double> aero_power, const double speed) {
-	std::map <double, double> ::iterator itr = aero_power.lower_bound(speed);
+std::pair <double, double> interpolateForce(std::map <double, double> aeroPower, const double speed) {
+	std::map <double, double> ::iterator itr = aeroPower.lower_bound(speed);
 	double y1 = (itr)->second;
 	double x1 = (itr)->first;
 	double y2 = (++itr)->second;
@@ -58,71 +58,71 @@ std::pair <double, double> interpolate_force(std::map <double, double> aero_powe
 	return std::pair <double, double>(k, b);
 }
 
-std::vector<double> y_coord(const double m, const double dt, std::map <double, double> aero_power, double h, std::vector<double> &y_speed) {
+std::vector<double> yCoord(const double m, const double dt, std::map <double, double> aeroPower, double h, std::vector<double> &ySpeed) {
 	std::vector <double> y;
 	double k, b, a, speed = 0;
-	std::map <double, double> ::iterator itr = ++aero_power.begin();
-	std::pair <double, double> line_force;
+	std::map <double, double> ::iterator itr = ++aeroPower.begin();
+	std::pair <double, double> lineForce;
 	while (h > 0)
 	{
 		y.push_back(h);
-		y_speed.push_back(speed);
+		ySpeed.push_back(speed);
 		if (speed > itr->first) {
-			line_force = interpolate_force(aero_power, (speed));
+			lineForce = interpolateForce(aeroPower, (speed));
 			itr++;
 		}
-		a = abs(-g*m + line_force.first*speed + line_force.second) / m;
+		a = abs(-g*m + lineForce.first*speed + lineForce.second) / m;
 		h -= speed*dt + a*dt*dt / 2;
 		speed = speed + a * dt;
 	}
 	return (y);
 }
 
-std::vector <double> coordinates(const double m, const double dt, std::map <double, double> Wx, std::map <double, double> aero_power, double x_speed,
-	std::vector <double> y, std::vector <std::pair<double, double>> time_sector, std::vector <double> &coord_speed) {
+std::vector <double> coordinates(const double m, const double dt, std::map <double, double> Wx, std::map <double, double> aeroPower, double xSpeed,
+	std::vector <double> y, std::vector <std::pair<double, double>> timeSector, std::vector <double> &coordSpeed) {
 	std::vector <double> x;
-	double k, b, a_body, curr_x = 0, a_wind;
-	int number1 = time_sector[0].second, number2 = 0, number3 = 0; //!!!!!!!!!!!!!!!
-	std::map <double, double> ::iterator itr = ++aero_power.begin();
+	double k, b, aBody, currX = 0, aWind;
+	int number1 = timeSector[0].second, number2 = 0, number3 = 0; //!!!!!!!!!!!!!!!
+	std::map <double, double> ::iterator itr = ++aeroPower.begin();
 	int y_size = y.size();
-	std::pair <double, double> line_force;
+	std::pair <double, double> lineForce;
 	for (int i = 0; i < y_size; i++)
 	{
-		x.push_back(curr_x);
-		coord_speed.push_back(x_speed);
-		if (x_speed > itr->first) {
-			line_force = interpolate_force(aero_power, (x_speed));
+		x.push_back(currX);
+		coordSpeed.push_back(xSpeed);
+		if (xSpeed > itr->first) {
+			lineForce = interpolateForce(aeroPower, (xSpeed));
 			itr++;
 		}
 		std::map <double, double> ::iterator itr_Wx = Wx.lower_bound(y[i]);
-		std::vector <std::pair<double, double>> ::iterator itr_time_sector = time_sector.begin();
-		/*while (itr_time_sector->first > y[i]) {
+		std::vector <std::pair<double, double>> ::iterator itrTimeSector = timeSector.begin();
+		/*while (itrTimeSector->first > y[i]) {
 			if (y[i] > 200) {
-				++itr_time_sector;
+				++itrTimeSector;
 			}
 			else {
-				itr_time_sector = --time_sector.end();
+				itrTimeSector = --timeSector.end();
 				break;
 			}
 		}
-		a_wind = (-itr_Wx->second + (--itr_Wx)->second) / (dt*itr_time_sector->second);*/
+		aWind = (-itr_Wx->second + (--itr_Wx)->second) / (dt*itrTimeSector->second);*/
 		int k = 0;
-		for (int j = 0; j<y_size, time_sector[j].first > y[i]; j++) {
+		for (int j = 0; j<y_size, timeSector[j].first > y[i]; j++) {
 			k++;
 		}
-		a_wind = (-itr_Wx->second + (--itr_Wx)->second) / (dt*time_sector[k].second);
+		aWind = (-itr_Wx->second + (--itr_Wx)->second) / (dt*timeSector[k].second);
 
-		/*if (number1 != itr_time_sector ->second) {
-			number1 = itr_time_sector->second;
+		/*if (number1 != itrTimeSector ->second) {
+			number1 = itrTimeSector->second;
 			std::cout << number2 << std::endl;
 			number2 = 0;
 		}
 		number2++;*/
 
-		a_body = (a_wind*m - (line_force.first*x_speed + line_force.second)) / m;
-		curr_x += x_speed*dt + a_body*dt*dt / 2;
-		x_speed = x_speed + a_body * dt;
-		//std::cout <<"time " << time_sector[k].second << ' ' <<curr_x<<' '<< x_speed<<" a_wind:" <<a_wind <<" forse:"<<line_force.first*x_speed + line_force.second <<" a_body:"<<a_body<<std::endl;
+		aBody = (aWind*m - (lineForce.first*xSpeed + lineForce.second)) / m;
+		currX += xSpeed*dt + aBody*dt*dt / 2;
+		xSpeed = xSpeed + aBody * dt;
+		//std::cout <<"time " << timeSector[k].second << ' ' <<currX<<' '<< x_speed<<" aWind:" <<aWind <<" forse:"<<lineForce.first*x_speed + lineForce.second <<" aBody:"<<aBody<<std::endl;
 	}
 	return (x);
 }
@@ -164,17 +164,17 @@ void CSV_output(std::map<float, float> F_map) {
 int main() {
 	unsigned int start_time = clock();
 	std::cout.precision(10);
-	double dt = 0.01, h = 1400, m = 100, start_speed = 250, dfi = 2 * M_PI / 360, speed;
+	double dt = 0.01, h = 1400, m = 100, startSpeed = 250, dfi = 2 * M_PI / 360, speed;
 	//std::cin >> "¬ведите скорость" >> speed >> "¬ведите высоту" >> h;
 
-	std::map <double, double> aero_power, Wx, Wz;
-	read_F_csv(aero_power, "F.csv");
+	std::map <double, double> aeroPower, Wx, Wz;
+	read_F_csv(aeroPower, "F.csv");
 	read_Wind_csv(Wx, Wz, "Wind.csv");
 	std::vector <double> x, z;
 	std::vector <double>  y_speed, x_speed, z_speed;;
-	std::vector <double> y = y_coord(m, dt, aero_power, h, y_speed);
+	std::vector <double> y = yCoord(m, dt, aeroPower, h, y_speed);
 	int size_of_coord = y.size();
-	std::vector <std::pair<double, double>> time = search_time_sector(Wx, y, h);
+	std::vector <std::pair<double, double>> time = searchTimeSector(Wx, y, h);
 	double  M[89][1]; 
 	double alf=0;
 	for (int i = 0; i < 90; i++) {
@@ -182,13 +182,13 @@ int main() {
 		//	system("pause");
 		}
 		alf = alf + 2 * M_PI / 360;
-		x = coordinates(m, dt, Wx, aero_power, start_speed*cos(alf), y, time, x_speed);
-		z = coordinates(m, dt, Wz, aero_power, start_speed*sin(alf), y, time, z_speed);
+		x = coordinates(m, dt, Wx, aeroPower, startSpeed*cos(alf), y, time, x_speed);
+		z = coordinates(m, dt, Wz, aeroPower, startSpeed*sin(alf), y, time, z_speed);
 		x_speed.clear();
 		z_speed.clear();
-		std::cout <<alf<<' '  <<start_speed*cos(alf)<<' ' << x[x.size() - 1] << ' ' << z[z.size() - 1] << ' ' << std::endl;
-		replace_path(x, x[x.size() - 1]);
-		replace_path(z, z[z.size() - 1]);
+		std::cout <<alf<<' '  <<startSpeed*cos(alf)<<' ' << x[x.size() - 1] << ' ' << z[z.size() - 1] << ' ' << std::endl;
+		replacePath(x, x[x.size() - 1]);
+		replacePath(z, z[z.size() - 1]);
 		M[i][0] = x[0]; M[i][1] = z[0];
 		std::cout << M[i][0] << ' ' << M[i][1] << ' ' << std::endl;
 		std::cout << i << std::endl;
