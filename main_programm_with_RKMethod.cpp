@@ -11,10 +11,10 @@
 
 const double g = 9.81;
 
-void replacePath(std::vector <double> &ñoordinates, double coordinatesFinal) {
-	int size = ñoordinates.size();
+void replacePath(std::vector <double> &coordinates, double ñoordinatesFinal) {
+	int size = coordinates.size();
 	for (int i = 0; i < size; i++) {
-		ñoordinates[i] -= coordinatesFinal;
+		coordinates[i] -= ñoordinatesFinal;
 	}
 	return;
 }
@@ -252,7 +252,7 @@ int main() {
 	std::cout << y.size() << ' ' << y2.size() << std::endl;
 
 	double alf = 0;
-	int sizeOfÑoordinates = y.size();
+	int sizeOfcoordinates = y.size();
 
 	std::vector <std::pair<double, double>> time = searchTimeSector(Wx, y, h);
 
@@ -297,7 +297,7 @@ int main() {
 	out.open("\trajectory.txt");
 	if (out.is_open())
 	{
-		for (int i = 0; i < sizeOfÑoordinates; i++) {
+		for (int i = 0; i < sizeOfcoordinates; i++) {
 			//	out << dt*i << ' ' << sqrt(x_speed[i] * x_speed[i] + y_speed[i] * y_speed[i] + z_speed[i] * z_speed[i]) << ' ' << x[i] << ' ' << z[i] << ' ' << y[i] << std::endl;
 		}
 	}
