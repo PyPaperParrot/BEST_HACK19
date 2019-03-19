@@ -11,10 +11,10 @@
 
 const double g = 9.81;
 
-void replacePath(std::vector <double> &ñoordinates, double ñoordinatesFinal) {
+void replacePath(std::vector <double> &ñoordinates, double coordinatesFinal) {
 	int size = ñoordinates.size();
 	for (int i = 0; i < size; i++) {
-		ñoordinates[i] -= ñoordinatesFinal;
+		ñoordinates[i] -= coordinatesFinal;
 	}
 	return;
 }
@@ -205,6 +205,20 @@ void CSV_output(std::map<float, float> F_map) {
 	system("cls");
 }
 
+void writeFile(const std::vector<double> vec, std::string file_name) {
+	std::ofstream out;
+	out.open(file_name);
+	if (out.is_open())
+	{
+		//for (int i = 0; i < vec.size(); i++) {
+				//out << dt*i << ' ' << sqrt(x_speed[i] * x_speed[i] + y_speed[i] * y_speed[i] + z_speed[i] * z_speed[i]) << ' ' << x[i] << ' ' << z[i] << ' ' << y[i] << std::endl;
+			std::copy(vec.begin(), vec.end(), std::ostream_iterator<double>(out, "\n"));
+		//}
+	}
+	out.close();
+	return;
+}
+
 int main() {
 	setlocale(0, "russian");
 	std::cout.precision(10);
@@ -256,6 +270,8 @@ int main() {
 		std::cout << x[x.size() - 1] << " " << z[z.size() - 1] << std::endl;
 		std::cout << xRK[xRK.size() - 1] << " " << zRK[zRK.size() - 1] << std::endl;
 		std::cout << abs(xRK[xRK.size() - 1] - x[x.size() - 1]) << " " << abs(zRK[zRK.size() - 1] - z[z.size() - 1]) << std::endl;
+		writeFile(x, "xTrajectory_Euler.txt");
+		writeFile(xRK, "xTrajectory_RK.txt");
 	}
 	else {
 		double  M[89][1];
