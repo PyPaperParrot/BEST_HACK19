@@ -11,10 +11,10 @@
 
 const double g = 9.81;
 
-void replacePath(std::vector <double> &coordinates, double ñoordinatesFinal) {
+void replacePath(std::vector <double> &coordinates, double coordinatesFinal) {
 	int size = coordinates.size();
 	for (int i = 0; i < size; i++) {
-		coordinates[i] -= ñoordinatesFinal;
+		coordinates[i] -= coordinatesFinal;
 	}
 	return;
 }
